@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CuentaClientes – Johan Plata</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f5f5f3;--bg2:#fff;--bg3:#f0f0ee;--text:#1a1a18;--text2:#555;--text3:#888;--border:#e0e0dc;--green:#1D9E75;--green-light:#EAF3DE;--green-dark:#27500A;--red:#A32D2D;--red-light:#FCEBEB;--blue-light:#E6F1FB;--blue-dark:#0C447C;--amber-light:#FAEEDA;--amber-dark:#633806;--purple-light:#EEEDFE;--purple-dark:#3C3489;--shadow:0 2px 12px rgba(0,0,0,0.06)}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+body.dark{--bg:#1a1a18;--bg2:#2a2a28;--bg3:#333331;--text:#f0f0ee;--text2:#ccc;--text3:#999;--border:#444;--shadow:0 2px 12px rgba(0,0,0,0.3)}
+.header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.header img{height:48px;width:48px;object-fit:contain;border-radius:50%;cursor:pointer;border:1.5px solid var(--border)}
+.header-name{font-size:14px;font-weight:600;letter-spacing:0.5px;color:var(--text)}
+.header-sub{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase}
+.nav{display:flex;gap:4px;margin-left:16px;flex-wrap:wrap}
+.nav-btn{padding:6px 14px;border-radius:20px;font-size:12px;border:0.5px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.nav-btn:hover{background:var(--bg3);color:var(--text)}
+.nav-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.app{max-width:960px;margin:0 auto;padding:1.5rem 1rem}
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;background:var(--bg)}
+.login-box{background:var(--bg2);border-radius:16px;border:0.5px solid var(--border);padding:2.5rem 2rem;width:100%;max-width:380px;text-align:center;box-shadow:var(--shadow)}
+.login-logo{width:90px;height:90px;object-fit:contain;border-radius:50%;margin-bottom:12px;border:2px solid var(--border)}
+.login-name{font-size:17px;font-weight:600;letter-spacing:1px;margin-bottom:2px;color:var(--text)}
+.login-sub{font-size:11px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.login-err{font-size:12px;color:var(--red);margin-bottom:10px;min-height:18px}
+/* INPUTS */
+input,select,textarea{width:100%;padding:8px 10px;font-size:13px;border-radius:7px;border:0.5px solid var(--border);background:var(--bg2);color:var(--text);font-family:inherit;outline:none;transition:border 0.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 2px #1D9E7520}
+textarea{resize:vertical;min-height:70px}
+button{font-family:inherit;cursor:pointer}
+.btn{padding:7px 16px;border-radius:8px;font-size:13px;border:0.5px solid var(--border);background:var(--bg3);color:var(--text)}
+.btn:hover{background:var(--border)}
+.btn-green{background:var(--green);color:#fff;border:none;font-weight:500}
+.btn-green:hover{opacity:0.9}
+.btn-red{background:var(--red-light);color:var(--red);border:none}
+.btn-icon{background:none;border:none;font-size:16px;padding:2px 6px;color:var(--text3)}
+/* BADGES */
+.badge{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;display:inline-block}
+.badge-activo{background:var(--green-light);color:var(--green-dark)}
+.badge-inactivo{background:var(--bg3);color:var(--text3)}
+.badge-pendiente{background:var(--amber-light);color:var(--amber-dark)}
+.badge-vigente,.badge-entregado{background:var(--green-light);color:var(--green-dark)}
+.badge-vencido{background:var(--red-light);color:var(--red)}
+.badge-presentado{background:var(--blue-light);color:var(--blue-dark)}
+.badge-tipo{background:var(--bg3);color:var(--text3);font-size:11px;padding:2px 8px;border-radius:6px}
+.badge-mensual{background:var(--purple-light);color:var(--purple-dark)}
+.badge-pagado{background:var(--green-light);color:var(--green-dark)}
+.badge-nopagado{background:var(--red-light);color:var(--red)}
+/* CARDS */
+.card{background:var(--bg2);border-radius:10px;border:0.5px solid var(--border);padding:12px 14px;margin-bottom:10px}
+.metric-card{background:var(--bg2);border-radius:12px;border:0.5px solid var(--border);padding:14px 16px;box-shadow:var(--shadow)}
+.section-title{font-size:13px;font-weight:500;margin-bottom:8px;color:var(--text)}
+.lbl{font-size:11px;color:var(--text3);margin-bottom:3px}
+.val{font-size:13px;font-weight:500;color:var(--text)}
+.row{display:flex;gap:8px;align-items:center;background:var(--bg3);border-radius:8px;padding:8px 10px;margin-bottom:6px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+/* CLIENTE ROW */
+.client-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;border:0.5px solid var(--border);margin-bottom:8px;cursor:pointer;background:var(--bg2);transition:all 0.12s}
+.client-row:hover{background:var(--bg3);transform:translateX(2px)}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0}
+.avatar-empresa{background:var(--blue-light);color:var(--blue-dark)}
+.avatar-natural{background:var(--green-light);color:var(--green-dark)}
+/* NAV */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.search-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-row input{flex:1;min-width:180px}
+.section-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px;margin-top:4px}
+.empty{text-align:center;padding:3rem 0;color:var(--text3)}
+/* PASS */
+.pass-wrap{position:relative;flex:2}
+.pass-wrap input{padding-right:30px}
+.pass-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;background:none;border:none;color:var(--text3)}
+/* DETAIL */
+.back-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);margin-right:8px}
+.detail-header{display:flex;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-bottom:14px}
+.doc-card{background:var(--bg2);border-radius:10px;border:0.5px solid var(--border);padding:10px 12px}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a18;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transition:opacity 0.3s;max-width:280px}
+.toast.show{opacity:1}
+/* ALERT BANNER */
+.alert-banner{background:var(--amber-light);border:0.5px solid #FAC775;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--amber-dark)}
+.alert-banner.danger{background:var(--red-light);border-color:#F09595;color:var(--red)}
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.cal-day{min-height:70px;background:var(--bg2);border-radius:6px;border:0.5px solid var(--border);padding:4px;font-size:11px}
+.cal-day.today{border-color:var(--green);background:var(--green-light)}
+.cal-day.other-month{opacity:0.4}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+.cal-header span{text-align:center;font-size:11px;font-weight:600;color:var(--text3);padding:4px 0}
+.cal-event{background:var(--amber-light);color:var(--amber-dark);border-radius:3px;padding:1px 4px;margin-top:2px;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.cal-event.vence{background:var(--red-light);color:var(--red)}
+/* FILE */
+.file-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg3);border-radius:7px;margin-bottom:4px;font-size:12px}
+.file-item a{color:var(--blue-dark);text-decoration:none;font-weight:500}
+.upload-area{border:1.5px dashed var(--border);border-radius:8px;padding:10px;text-align:center;font-size:12px;color:var(--text3);cursor:pointer;display:block;transition:all 0.15s}
+.upload-area:hover{border-color:var(--green);color:var(--green)}
+/* HONORARIOS */
+.honor-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;background:var(--bg3);margin-bottom:6px}
+/* DARK TOGGLE */
+.dark-btn{background:none;border:0.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--text3);cursor:pointer}
+/* TAGS */
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500;margin:2px;background:var(--blue-light);color:var(--blue-dark)}
+/* PDF EXPORT */
+@media print{.no-print{display:none!important}.print-only{display:block!important}}
+.print-only{display:none}
+/* RESPONSIVE */
+@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.nav{display:none}.mobile-menu{display:flex!important}.header{padding:8px 12px}}
+.mobile-menu{display:none;gap:8px}
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#888;font-size:14px">⏳ Cargando...</div></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="logoSeleccionado(this)"/>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig={apiKey:"AIzaSyBBf9HzSrHyVUSedRoim7jnWNwZdhh_DcE",authDomain:"datosclientes-68f19.firebaseapp.com",projectId:"datosclientes-68f19",storageBucket:"datosclientes-68f19.firebasestorage.app",messagingSenderId:"94517215130",appId:"1:94517215130:web:7c8b17976b122331ed8423"};
+const fbApp=initializeApp(firebaseConfig);
+const auth=getAuth(fbApp);
+const db=getFirestore(fbApp);
+const storage=getStorage(fbApp);
+
+// ── LOGO ────────────────────────────────────────────────────────
+const LOGO_DEFAULT="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='47' fill='none' stroke='%23222' stroke-width='2'/%3E%3Ccircle cx='50' cy='50' r='43' fill='none' stroke='%23222' stroke-width='0.8'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='36' font-family='Georgia,serif' fill='%23222'%3EJP%3C/text%3E%3C/svg%3E";
+let logoSrc=localStorage.getItem("jp_logo")||LOGO_DEFAULT;
+let darkMode=localStorage.getItem("jp_dark")==="1";
+if(darkMode) document.body.classList.add("dark");
+
+window.cambiarLogo=()=>document.getElementById("logoFileInput").click();
+window.logoSeleccionado=(input)=>{
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();r.onload=e=>{localStorage.setItem("jp_logo",e.target.result);logoSrc=e.target.result;render();toast("✅ Logo actualizado")};
+  r.readAsDataURL(file);input.value="";
+};
+window.toggleDark=()=>{darkMode=!darkMode;localStorage.setItem("jp_dark",darkMode?"1":"0");document.body.classList.toggle("dark",darkMode);render();};
+
+// ── CONSTANTES ──────────────────────────────────────────────────
+const DOCS_PRED=["Cédula de ciudadanía","RUT","Cámara de comercio","Certificado bancario","Certificado de ingresos","Declaración de renta","Contrato de arrendamiento","Escritura pública","Pasaporte / visa","Estados de cuenta bancarios"];
+const OBLIG_LIST=["IVA bimestral","IVA cuatrimestral","IVA anual","Retención en la fuente","Autorretención","Renta personas naturales","Renta personas jurídicas","Industria y comercio","Avisos y tableros","Impuesto predial","Impuesto de vehículos","Declaración de activos en el exterior","Medios magnéticos (exógena)","Parafiscales / PILA","Nómina electrónica","Facturación electrónica","ICA régimen simplificado","Impuesto al patrimonio","Otro"];
+const DOC_EST=["pendiente","vigente","vencido","no aplica"];
+const OBLIG_EST=["pendiente","presentado","vencido"];
+const PERIODOS=["mensual","bimestral","cuatrimestral","semestral","anual","única vez"];
+const CATEGORIAS=["Comerciante","Empleado","Empresa SAS","Empresa LTDA","Rentista","Profesional independiente","Pensionado","Otro"];
+const DIAS=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+// ── ESTADO ──────────────────────────────────────────────────────
+let S={vista:"dashboard",clientes:[],seleccionado:null,busqueda:"",filtroTipo:"todos",user:null,loginErr:"",loginLoad:false,calMes:new Date().getMonth(),calAnio:new Date().getFullYear()};
+let unsubClientes=null;
+
+function setState(p){Object.assign(S,p);render();}
+function toast(msg,ms=2800){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),ms);}
+function escH(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function escA(s){return(s||"").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function badge(e){return`<span class="badge badge-${(e||"").replace(/\s/g,"")}">${e||""}</span>`}
+function avatar(c){return`<div class="avatar ${c.tipo==="empresa"?"avatar-empresa":"avatar-natural"}">${c.nombre?c.nombre[0].toUpperCase():"?"}</div>`}
+function hoy(){return new Date().toISOString().slice(0,10)}
+function diasHasta(fecha){if(!fecha)return 999;return Math.ceil((new Date(fecha)-new Date(hoy()))/(1000*60*60*24))}
+
+// ── AUTH ────────────────────────────────────────────────────────
+onAuthStateChanged(auth,user=>{
+  if(user){
+    S.user=user;
+    if(!unsubClientes){
+      unsubClientes=onSnapshot(collection(db,"clientes"),snap=>{
+        S.clientes=snap.docs.map(d=>({...d.data(),_id:d.id}));
+        render();
+      });
+    }
+    if(S.vista==="login")setState({vista:"dashboard"});else render();
+  }else{
+    S.user=null;if(unsubClientes){unsubClientes();unsubClientes=null;}
+    setState({vista:"login",clientes:[]});
+  }
+});
+
+window.doLogin=async()=>{
+  const email=document.getElementById("lEmail").value.trim();
+  const pass=document.getElementById("lPass").value;
+  if(!email||!pass){setState({loginErr:"Completa todos los campos."});return;}
+  setState({loginLoad:true,loginErr:""});
+  try{await signInWithEmailAndPassword(auth,email,pass);}
+  catch(e){setState({loginLoad:false,loginErr:"Correo o contraseña incorrectos."});}
+};
+window.doLogout=async()=>{if(!confirm("¿Cerrar sesión?"))return;await signOut(auth);};
+
+// ── FIRESTORE ───────────────────────────────────────────────────
+async function saveCliente(c){
+  const{_id,...data}=c;
+  const ts=new Date().toISOString();
+  const hist=[...(c.historial||[]),{fecha:ts,accion:_id?"Actualizado":"Creado"}].slice(-20);
+  data.historial=hist;
+  if(_id){await updateDoc(doc(db,"clientes",_id),data);}
+  else{const r=await addDoc(collection(db,"clientes"),data);c._id=r.id;}
+  toast("✅ Cliente guardado");setState({seleccionado:c,vista:"detalle"});
+}
+async function deleteCliente(id){
+  await deleteDoc(doc(db,"clientes",id));
+  toast("🗑 Cliente eliminado");setState({vista:"lista",seleccionado:null});
+}
+
+// ── STORAGE ─────────────────────────────────────────────────────
+window.subirArchivoDoc=async(cid,di,inp)=>{
+  const file=inp.files[0];if(!file)return;
+  toast("⏳ Subiendo...");
+  const path=`clientes/${cid}/docs/${Date.now()}_${file.name}`;
+  await uploadBytes(ref(storage,path),file);
+  const url=await getDownloadURL(ref(storage,path));
+  const c=S.clientes.find(x=>x._id===cid);
+  const docs=[...(c.documentos||[])];
+  docs[di]={...docs[di],archivoUrl:url,archivoPath:path,estado:"vigente"};
+  await updateDoc(doc(db,"clientes",cid),{documentos:docs});
+  toast("✅ Documento adjuntado");inp.value="";
+};
+window.eliminarArchivoDoc=async(cid,di,path)=>{
+  if(!confirm("¿Eliminar archivo adjunto?"))return;
+  try{await deleteObject(ref(storage,path));}catch{}
+  const c=S.clientes.find(x=>x._id===cid);
+  const docs=[...(c.documentos||[])];
+  docs[di]={...docs[di],archivoUrl:"",archivoPath:"",estado:"pendiente"};
+  await updateDoc(doc(db,"clientes",cid),{documentos:docs});
+  toast("🗑 Archivo eliminado");
+};
+
+// ── RENDER PRINCIPAL ────────────────────────────────────────────
+function render(){
+  const root=document.getElementById("root");
+  if(S.vista==="login"){root.innerHTML=renderLogin();return;}
+  root.innerHTML=renderHeaderHTML()+`<div class="app">${renderVista()}</div>`;
+}
+
+function renderVista(){
+  switch(S.vista){
+    case"dashboard":return renderDashboard();
+    case"lista":return renderLista();
+    case"detalle":return renderDetalle();
+    case"nuevo":return renderForm(false);
+    case"editar":return renderForm(true);
+    case"calendario":return renderCalendario();
+    default:return renderDashboard();
+  }
+}
+
+// ── HEADER ──────────────────────────────────────────────────────
+function renderHeaderHTML(){
+  const alertas=getAlertas();
+  return`<div class="header">
+    <img src="${escH(logoSrc)}" alt="Logo" title="Cambiar logo" onclick="cambiarLogo()" style="cursor:pointer"/>
+    <div><div class="header-name">JOHAN PLATA</div><div class="header-sub">Contador Público</div></div>
+    <nav class="nav">
+      <button class="nav-btn ${S.vista==="dashboard"?"active":""}" onclick="setState({vista:'dashboard'})">📊 Dashboard</button>
+      <button class="nav-btn ${S.vista==="lista"||S.vista==="detalle"||S.vista==="nuevo"||S.vista==="editar"?"active":""}" onclick="setState({vista:'lista'})">👥 Clientes</button>
+      <button class="nav-btn ${S.vista==="calendario"?"active":""}" onclick="setState({vista:'calendario'})">📅 Calendario ${alertas.length>0?`<span style="background:#E24B4A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">${alertas.length}</span>`:""}</button>
+    </nav>
+    <div style="flex:1"></div>
+    <button class="dark-btn" onclick="toggleDark()" title="Modo oscuro">${darkMode?"☀️":"🌙"}</button>
+    <span style="font-size:11px;color:var(--text3);margin:0 10px;display:none" id="userEmail">${escH(S.user?.email||"")}</span>
+    <button class="btn btn-red" style="font-size:12px;padding:5px 12px" onclick="doLogout()">🚪 Salir</button>
+  </div>`;
+}
+
+// ── LOGIN ───────────────────────────────────────────────────────
+function renderLogin(){
+  return`<div class="login-wrap"><div class="login-box">
+    <img class="login-logo" src="${escH(logoSrc)}" alt="Logo"/>
+    <div class="login-name">JOHAN PLATA</div>
+    <div class="login-sub">Contador Público</div>
+    <input id="lEmail" type="email" placeholder="Correo electrónico" style="margin-bottom:10px"/>
+    <div style="position:relative;margin-bottom:10px">
+      <input id="lPass" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button class="pass-eye" onclick="const i=document.getElementById('lPass');i.type=i.type==='password'?'text':'password'">👁</button>
+    </div>
+    <div class="login-err">${escH(S.loginErr)}</div>
+    <button class="btn btn-green" style="width:100%;padding:10px;font-size:14px" onclick="doLogin()" ${S.loginLoad?"disabled":""}>
+      ${S.loginLoad?"⏳ Ingresando...":"Ingresar"}
+    </button>
+  </div></div>`;
+}
+
+// ── ALERTAS ─────────────────────────────────────────────────────
+function getAlertas(){
+  const alerts=[];
+  S.clientes.forEach(c=>{
+    (c.obligaciones||[]).forEach(o=>{
+      if(o.fecha&&o.estado==="pendiente"){
+        const d=diasHasta(o.fecha);
+        if(d<=15)alerts.push({tipo:d<=3?"danger":"warning",msg:`${c.nombre}: ${o.tipo} vence en ${d} día${d===1?"":"s"}`,fecha:o.fecha,cliente:c.nombre});
+      }
+    });
+    (c.documentos||[]).forEach(doc=>{
+      if(doc.vencimiento&&doc.estado!=="no aplica"){
+        const d=diasHasta(doc.vencimiento);
+        if(d<=15)alerts.push({tipo:d<=3?"danger":"warning",msg:`${c.nombre}: ${doc.nombre} vence en ${d} día${d===1?"":"s"}`,fecha:doc.vencimiento,cliente:c.nombre});
+      }
+    });
+  });
+  return alerts.sort((a,b)=>a.fecha>b.fecha?1:-1);
+}
+
+// ── DASHBOARD ───────────────────────────────────────────────────
+function renderDashboard(){
+  const total=S.clientes.length;
+  const activos=S.clientes.filter(c=>c.estado==="activo").length;
+  const naturales=S.clientes.filter(c=>c.tipo==="natural").length;
+  const empresas=S.clientes.filter(c=>c.tipo==="empresa").length;
+  const pendOblig=S.clientes.reduce((a,c)=>a+(c.obligaciones||[]).filter(o=>o.estado==="pendiente").length,0);
+  const pendDocs=S.clientes.reduce((a,c)=>a+(c.documentos||[]).filter(d=>d.estado==="pendiente").length,0);
+  const honorTotal=S.clientes.reduce((a,c)=>a+((c.honorarios||[]).reduce((b,h)=>b+(parseFloat(h.valor)||0),0)),0);
+  const honorPend=S.clientes.reduce((a,c)=>a+((c.honorarios||[]).filter(h=>h.estado==="pendiente").reduce((b,h)=>b+(parseFloat(h.valor)||0),0)),0);
+  const alertas=getAlertas();
+  const proxVenc=S.clientes.flatMap(c=>[
+    ...(c.obligaciones||[]).filter(o=>o.fecha&&o.estado==="pendiente").map(o=>({nombre:o.tipo,fecha:o.fecha,cliente:c.nombre,tipo:"obligacion"})),
+    ...(c.documentos||[]).filter(d=>d.vencimiento).map(d=>({nombre:d.nombre,fecha:d.vencimiento,cliente:c.nombre,tipo:"documento"}))
+  ]).filter(x=>x.fecha>=hoy()).sort((a,b)=>a.fecha>b.fecha?1:-1).slice(0,5);
+
+  return`
+    <div class="topbar"><h2 style="margin:0">Dashboard</h2>
+      <span style="font-size:12px;color:var(--text3)">${new Date().toLocaleDateString("es-CO",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</span>
+    </div>
+    ${alertas.length>0?alertas.slice(0,3).map(a=>`<div class="alert-banner ${a.tipo==="danger"?"danger":""}">⚠️ ${escH(a.msg)}</div>`).join(""):""}
+    <div class="grid4" style="margin-bottom:20px">
+      <div class="metric-card"><div class="lbl">Total clientes</div><div style="font-size:28px;font-weight:600;color:var(--green)">${total}</div><div style="font-size:11px;color:var(--text3)">${activos} activos</div></div>
+      <div class="metric-card"><div class="lbl">Personas / Empresas</div><div style="font-size:28px;font-weight:600;color:var(--blue-dark)">${naturales}</div><div style="font-size:11px;color:var(--text3)">${empresas} empresas</div></div>
+      <div class="metric-card"><div class="lbl">Obligaciones pendientes</div><div style="font-size:28px;font-weight:600;color:${pendOblig>0?"#E24B4A":"var(--green)"}">${pendOblig}</div><div style="font-size:11px;color:var(--text3)">${pendDocs} docs pendientes</div></div>
+      <div class="metric-card"><div class="lbl">Honorarios por cobrar</div><div style="font-size:22px;font-weight:600;color:${honorPend>0?"#E24B4A":"var(--green)"}">$${honorPend.toLocaleString("es-CO")}</div><div style="font-size:11px;color:var(--text3)">Total: $${honorTotal.toLocaleString("es-CO")}</div></div>
+    </div>
+    <div class="grid2" style="margin-bottom:20px">
+      <div class="card">
+        <div class="section-title">📅 Próximos vencimientos</div>
+        ${proxVenc.length===0?`<div style="font-size:12px;color:var(--text3)">Sin vencimientos próximos 🎉</div>`:""}
+        ${proxVenc.map(v=>{const d=diasHasta(v.fecha);return`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border)">
+          <div><div style="font-size:12px;font-weight:500">${escH(v.cliente)}</div><div style="font-size:11px;color:var(--text3)">${escH(v.nombre)}</div></div>
+          <span class="badge ${d<=3?"badge-vencido":d<=7?"badge-pendiente":"badge-vigente"}">${d<=0?"Hoy":d===1?"Mañana":d+" días"}</span>
+        </div>`}).join("")}
+      </div>
+      <div class="card">
+        <div class="section-title">👥 Clientes recientes</div>
+        ${S.clientes.slice(-5).reverse().map(c=>`<div class="client-row" style="margin-bottom:6px;padding:8px 10px" onclick="verDetalle('${escA(c._id)}')">
+          ${avatar(c)}<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(c.nombre)}</div>
+          <div style="font-size:11px;color:var(--text3)">${c.tipo==="natural"?"Persona Natural":"Empresa"}</div></div>
+          ${badge(c.estado)}
+        </div>`).join("")}
+      </div>
+    </div>`;
+}
+
+// ── CALENDARIO ──────────────────────────────────────────────────
+function renderCalendario(){
+  const mes=S.calMes;const anio=S.calAnio;
+  const primerDia=new Date(anio,mes,1).getDay();
+  const diasMes=new Date(anio,mes+1,0).getDate();
+  const eventos={};
+  S.clientes.forEach(c=>{
+    (c.obligaciones||[]).forEach(o=>{
+      if(o.fecha&&o.fecha.startsWith(`${anio}-${String(mes+1).padStart(2,"0")}`)){
+        const d=parseInt(o.fecha.slice(8));
+        if(!eventos[d])eventos[d]=[];
+        eventos[d].push({txt:`${c.nombre}: ${o.tipo}`,tipo:"oblig",estado:o.estado});
+      }
+    });
+    (c.documentos||[]).forEach(doc=>{
+      if(doc.vencimiento&&doc.vencimiento.startsWith(`${anio}-${String(mes+1).padStart(2,"0")}`)){
+        const d=parseInt(doc.vencimiento.slice(8));
+        if(!eventos[d])eventos[d]=[];
+        eventos[d].push({txt:`${c.nombre}: ${doc.nombre}`,tipo:"doc",estado:doc.estado});
+      }
+    });
+  });
+  const hoyDate=new Date();const esEsteMes=hoyDate.getMonth()===mes&&hoyDate.getFullYear()===anio;
+  const diaHoy=esEsteMes?hoyDate.getDate():null;
+  let celdas="";
+  for(let i=0;i<primerDia;i++)celdas+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=diasMes;d++){
+    const isHoy=d===diaHoy;
+    const evs=eventos[d]||[];
+    celdas+=`<div class="cal-day ${isHoy?"today":""}">
+      <div style="font-size:11px;font-weight:${isHoy?"700":"400"};color:${isHoy?"var(--green)":"var(--text3)"};margin-bottom:2px">${d}</div>
+      ${evs.slice(0,3).map(e=>`<div class="cal-event ${e.estado==="vencido"?"vence":""}" title="${escA(e.txt)}">${escH(e.txt)}</div>`).join("")}
+      ${evs.length>3?`<div style="font-size:9px;color:var(--text3)">+${evs.length-3} más</div>`:""}
+    </div>`;
+  }
+  const alertas=getAlertas();
+  return`
+    <div class="topbar">
+      <h2 style="margin:0">📅 Calendario de vencimientos</h2>
+    </div>
+    ${alertas.length>0?`<div class="alert-banner" style="margin-bottom:12px">⚠️ Tienes ${alertas.length} vencimiento${alertas.length>1?"s":""} próximo${alertas.length>1?"s":""} en los próximos 15 días</div>`:""}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <button class="btn" onclick="cambiarMes(-1)">← Anterior</button>
+      <span style="font-size:15px;font-weight:500">${MESES[mes]} ${anio}</span>
+      <button class="btn" onclick="cambiarMes(1)">Siguiente →</button>
+    </div>
+    <div class="cal-header">${DIAS.map(d=>`<span>${d}</span>`).join("")}</div>
+    <div class="cal-grid">${celdas}</div>
+    ${alertas.length>0?`<div class="card" style="margin-top:16px">
+      <div class="section-title">⚠️ Alertas de vencimiento</div>
+      ${alertas.map(a=>`<div class="alert-banner ${a.tipo==="danger"?"danger":""}" style="margin-bottom:6px">${escH(a.msg)}</div>`).join("")}
+    </div>`:""}`;
+}
+window.cambiarMes=(dir)=>{
+  let m=S.calMes+dir,a=S.calAnio;
+  if(m>11){m=0;a++;}if(m<0){m=11;a--;}
+  setState({calMes:m,calAnio:a});
+};
+
+// ── LISTA ───────────────────────────────────────────────────────
+function renderLista(){
+  const{clientes,busqueda,filtroTipo}=S;
+  const q=busqueda.toLowerCase();
+  const f=clientes.filter(c=>(c.nombre.toLowerCase().includes(q)||(c.nitCedula||"").includes(q)||(c.email||"").toLowerCase().includes(q))&&(filtroTipo==="todos"||c.tipo===filtroTipo));
+  const empresas=f.filter(c=>c.tipo==="empresa");
+  const naturales=f.filter(c=>c.tipo==="natural");
+  let rows=f.length===0
+    ?`<div class="empty"><div style="font-size:40px;margin-bottom:12px">📂</div><div>${clientes.length===0?"Aún no tienes clientes":"No se encontraron resultados"}</div></div>`
+    :`${(filtroTipo==="todos"||filtroTipo==="empresa")&&empresas.length>0?`<div class="section-label">Empresas (${empresas.length})</div>${empresas.map(clienteRow).join("")}`:""}
+     ${(filtroTipo==="todos"||filtroTipo==="natural")&&naturales.length>0?`<div class="section-label" style="margin-top:12px">Personas Naturales (${naturales.length})</div>${naturales.map(clienteRow).join("")}`:""}`;
+  return`
+    <div class="topbar">
+      <div><h2 style="margin:0">Mis Clientes</h2><span style="font-size:12px;color:var(--text3)">${clientes.length} registrados</span></div>
+      <button class="btn btn-green" onclick="goNuevo()">+ Nuevo cliente</button>
+    </div>
+    <div class="search-row">
+      <input placeholder="🔍  Buscar por nombre, NIT, cédula o correo..." value="${escH(busqueda)}" oninput="setState({busqueda:this.value})"/>
+      <select onchange="setState({filtroTipo:this.value})">
+        <option value="todos" ${filtroTipo==="todos"?"selected":""}>Todos</option>
+        <option value="natural" ${filtroTipo==="natural"?"selected":""}>Persona Natural</option>
+        <option value="empresa" ${filtroTipo==="empresa"?"selected":""}>Empresa</option>
+      </select>
+    </div>${rows}`;
+}
+
+function clienteRow(c){
+  const pend=[...(c.documentos||[]),...(c.obligaciones||[])].filter(x=>x.estado==="pendiente"||x.estado==="vencido").length;
+  const prox=(c.recordatorios||[]).filter(r=>r.fecha&&r.fecha>=hoy()).sort((a,b)=>a.fecha>b.fecha?1:-1)[0];
+  const honorPend=(c.honorarios||[]).filter(h=>h.estado==="pendiente").length;
+  return`<div class="client-row" onclick="verDetalle('${escA(c._id)}')">
+    ${avatar(c)}
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(c.nombre)||"Sin nombre"}</div>
+      <div style="font-size:11px;color:var(--text3)">${c.tipo==="natural"?"CC":"NIT"}: ${escH(c.nitCedula)||"—"}${c.categoria?` · ${c.categoria}`:""}</div>
+    </div>
+    <div style="display:flex;gap:5px;align-items:center;flex-shrink:0;flex-wrap:wrap">
+      ${pend>0?`<span class="badge badge-pendiente">${pend} pend.</span>`:""}
+      ${honorPend>0?`<span class="badge badge-nopagado">💰${honorPend}</span>`:""}
+      ${prox?`<span class="badge badge-mensual">🔔</span>`:""}
+      ${badge(c.estado)}<span style="color:var(--border);font-size:16px">›</span>
+    </div>
+  </div>`;
+}
+
+// ── DETALLE ─────────────────────────────────────────────────────
+function renderDetalle(){
+  const c=S.seleccionado;if(!c)return"";
+  const credHtml=(c.credenciales||[]).length>0?`<div style="margin-bottom:14px">
+    <div class="section-title">🔑 Credenciales</div>
+    ${(c.credenciales||[]).map((cr,i)=>`<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:80px"><div class="lbl">Plataforma</div><div class="val">${escH(cr.plataforma)}</div></div>
+      <div style="flex:1;min-width:80px"><div class="lbl">Usuario</div><div class="val">${escH(cr.usuario)}</div></div>
+      <div style="flex:1;min-width:110px"><div class="lbl">Contraseña</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span id="pass_${i}" style="font-family:monospace;letter-spacing:2px">••••••••</span>
+          <button class="btn-icon" onclick="togglePass(${i},'${escA(cr.contrasena)}')">👁</button>
+        </div></div>
+    </div>`).join("")}</div>`:"";
+
+  const docHtml=(c.documentos||[]).length>0?`<div style="margin-bottom:14px">
+    <div class="section-title">📁 Documentos legales</div>
+    <div class="doc-grid">${(c.documentos||[]).map((d,di)=>`<div class="doc-card">
+      <div style="font-size:13px;font-weight:500;margin-bottom:4px">${escH(d.nombre)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">${badge(d.estado)}
+        ${d.vencimiento?`<span style="font-size:10px;color:var(--text3)">Vence: ${d.vencimiento}</span>`:""}
+      </div>
+      ${d.numero?`<div style="font-size:11px;color:var(--text3);margin-bottom:4px">N°: ${escH(d.numero)}</div>`:""}
+      ${d.archivoUrl
+        ?`<div style="display:flex;gap:4px;margin-top:4px">
+            <a href="${escH(d.archivoUrl)}" target="_blank" style="flex:1;text-align:center;padding:5px;background:var(--blue-light);color:var(--blue-dark);border-radius:6px;font-size:11px;font-weight:500;text-decoration:none">👁 Ver</a>
+            <a href="${escH(d.archivoUrl)}" download style="flex:1;text-align:center;padding:5px;background:var(--green-light);color:var(--green-dark);border-radius:6px;font-size:11px;font-weight:500;text-decoration:none">⬇️</a>
+            <button onclick="eliminarArchivoDoc('${escA(c._id)}',${di},'${escA(d.archivoPath||"")}')" style="padding:5px 7px;background:var(--red-light);color:var(--red);border:none;border-radius:6px;font-size:11px;cursor:pointer">🗑</button>
+          </div>`
+        :`<label class="upload-area" style="margin-top:4px" onclick="document.getElementById('df_${escA(c._id)}_${di}').click()">📎 Adjuntar</label>
+          <input type="file" id="df_${escA(c._id)}_${di}" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="subirArchivoDoc('${escA(c._id)}',${di},this)"/>`}
+    </div>`).join("")}</div></div>`:"";
+
+  const obligHtml=(c.obligaciones||[]).length>0?`<div style="margin-bottom:14px">
+    <div class="section-title">📋 Obligaciones fiscales</div>
+    <div class="grid2">${(c.obligaciones||[]).map(o=>`<div class="card" style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div><div style="font-size:13px;font-weight:500">${escH(o.tipo)}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${o.periodo?`Período: ${o.periodo}`:""}${o.fecha?` · ${o.fecha}`:""}</div>
+      </div>${badge(o.estado)}
+    </div>`).join("")}</div></div>`:"";
+
+  const recHtml=(c.recordatorios||[]).length>0?`<div style="margin-bottom:14px">
+    <div class="section-title">🔔 Recordatorios</div>
+    ${(c.recordatorios||[]).sort((a,b)=>a.fecha>b.fecha?1:-1).map(r=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <div><span style="font-size:13px">${escH(r.texto)}</span>${r.mensual?`<span class="badge badge-mensual" style="margin-left:6px">🔁</span>`:""}</div>
+      <span style="font-size:12px;color:${r.fecha&&r.fecha<hoy()?"var(--red)":"var(--text3)"}">${r.fecha||""}</span>
+    </div>`).join("")}</div>`:"";
+
+  const honorHtml=`<div style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="section-title" style="margin:0">💰 Honorarios</div>
+      <button class="btn" style="font-size:12px;padding:3px 10px" onclick="agregarHonorario('${escA(c._id)}')">+ Agregar</button>
+    </div>
+    ${(c.honorarios||[]).length===0?`<div style="font-size:12px;color:var(--text3)">Sin registros de honorarios.</div>`:""}
+    ${(c.honorarios||[]).map((h,i)=>`<div class="honor-row">
+      <div><div style="font-size:13px;font-weight:500">${escH(h.concepto)}</div>
+        <div style="font-size:11px;color:var(--text3)">${h.fecha||""} · ${h.periodo||""}</div></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;font-weight:600">$${(parseFloat(h.valor)||0).toLocaleString("es-CO")}</span>
+        ${badge(h.estado==="pagado"?"pagado":"pendiente")}
+        <button onclick="toggleHonorario('${escA(c._id)}',${i})" style="padding:4px 10px;border-radius:6px;border:none;cursor:pointer;font-size:12px;background:${h.estado==="pagado"?"var(--amber-light)":"var(--green-light)"};color:${h.estado==="pagado"?"var(--amber-dark)":"var(--green-dark)"}">${h.estado==="pagado"?"↩️ Reversar":"✅ Pagado"}</button>
+        <button class="btn-icon" style="color:var(--red)" onclick="eliminarHonorario('${escA(c._id)}',${i})">🗑</button>
+      </div>
+    </div>`).join("")}
+    ${(c.honorarios||[]).length>0?`<div style="margin-top:8px;text-align:right;font-size:12px;color:var(--text3)">
+      Total: <b>$${(c.honorarios||[]).reduce((a,h)=>a+(parseFloat(h.valor)||0),0).toLocaleString("es-CO")}</b> · 
+      Pendiente: <b style="color:var(--red)">$${(c.honorarios||[]).filter(h=>h.estado!=="pagado").reduce((a,h)=>a+(parseFloat(h.valor)||0),0).toLocaleString("es-CO")}</b>
+    </div>`:""}</div>`;
+
+  const histHtml=(c.historial||[]).length>0?`<div style="margin-bottom:14px">
+    <div class="section-title">📜 Historial de cambios</div>
+    ${[...(c.historial||[])].reverse().slice(0,5).map(h=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:12px">
+      <span>${escH(h.accion)}</span><span style="color:var(--text3)">${h.fecha?new Date(h.fecha).toLocaleString("es-CO"):""}</span>
+    </div>`).join("")}</div>`:"";
+
+  const notasHtml=c.notas?`<div class="card" style="margin-bottom:14px">
+    <div class="section-title">📝 Notas</div>
+    <div style="font-size:13px;color:var(--text2);white-space:pre-wrap">${escH(c.notas)}</div>
+  </div>`:"";
+
+  return`<div id="fichaCliente">
+    <div class="detail-header">
+      <button class="back-btn" onclick="setState({vista:'lista'})">←</button>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:16px;font-weight:600">${escH(c.nombre)}</span>
+          ${badge(c.estado)}
+          <span class="badge badge-tipo">${c.tipo==="natural"?"Persona Natural":"Empresa"}</span>
+          ${c.categoria?`<span class="tag">${escH(c.categoria)}</span>`:""}
+        </div>
+        <div style="font-size:12px;color:var(--text3)">${c.tipo==="natural"?"CC":"NIT"}: ${escH(c.nitCedula)}</div>
+      </div>
+      <button class="btn" onclick="exportarPDF('${escA(c._id)}')" style="margin-right:6px;font-size:12px">📄 PDF</button>
+      <button class="btn" onclick="goEditar()" style="margin-right:6px">✏️ Editar</button>
+      <button class="btn btn-red" onclick="confirmarEliminar('${escA(c._id)}')">🗑</button>
+    </div>
+    <div class="grid3" style="margin-bottom:14px">
+      ${c.contacto?`<div class="card"><div class="lbl">Teléfono</div><div class="val">${escH(c.contacto)}</div></div>`:""}
+      ${c.email?`<div class="card"><div class="lbl">Correo</div><div class="val" style="word-break:break-all;font-size:12px">${escH(c.email)}</div></div>`:""}
+      ${c.direccion?`<div class="card"><div class="lbl">Dirección</div><div class="val">${escH(c.direccion)}</div></div>`:""}
+    </div>
+    ${credHtml}${docHtml}${obligHtml}${honorHtml}${recHtml}${notasHtml}${histHtml}
+  </div>`;
+}
+
+// ── HONORARIOS ──────────────────────────────────────────────────
+window.agregarHonorario=async(cid)=>{
+  const concepto=prompt("Concepto (ej: Declaración de renta 2024):");if(!concepto)return;
+  const valor=prompt("Valor en pesos:");if(!valor)return;
+  const periodo=prompt("Período (ej: Enero 2025):")||"";
+  const fecha=new Date().toISOString().slice(0,10);
+  const c=S.clientes.find(x=>x._id===cid);
+  const honorarios=[...(c.honorarios||[]),{concepto,valor:parseFloat(valor.replace(/\D/g,""))||0,periodo,fecha,estado:"pendiente"}];
+  await updateDoc(doc(db,"clientes",cid),{honorarios});
+  toast("✅ Honorario registrado");
+};
+window.toggleHonorario=async(cid,i)=>{
+  const c=S.clientes.find(x=>x._id===cid);
+  const h=[...(c.honorarios||[])];
+  h[i]={...h[i],estado:h[i].estado==="pagado"?"pendiente":"pagado"};
+  await updateDoc(doc(db,"clientes",cid),{honorarios:h});
+};
+window.eliminarHonorario=async(cid,i)=>{
+  if(!confirm("¿Eliminar este honorario?"))return;
+  const c=S.clientes.find(x=>x._id===cid);
+  const h=(c.honorarios||[]).filter((_,j)=>j!==i);
+  await updateDoc(doc(db,"clientes",cid),{honorarios:h});
+};
+
+// ── EXPORTAR PDF ────────────────────────────────────────────────
+window.exportarPDF=(cid)=>{
+  const c=S.clientes.find(x=>x._id===cid);if(!c)return;
+  const el=document.getElementById("fichaCliente");
+  const opt={margin:10,filename:`${c.nombre.replace(/\s+/g,"_")}_ficha.pdf`,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
+  toast("⏳ Generando PDF...");
+  html2pdf().set(opt).from(el).save().then(()=>toast("✅ PDF descargado"));
+};
+
+// ── FORMULARIO ──────────────────────────────────────────────────
+let formData=null;
+function initForm(c){formData=JSON.parse(JSON.stringify(c));}
+
+function renderForm(esEditar){
+  const c=formData;
+  const credRows=(c.credenciales||[]).map((cr,i)=>`<div class="row">
+    <input style="flex:2;min-width:90px" placeholder="Plataforma" value="${escH(cr.plataforma)}" oninput="updateForm('credenciales',${i},'plataforma',this.value)"/>
+    <input style="flex:2;min-width:90px" placeholder="Usuario" value="${escH(cr.usuario)}" oninput="updateForm('credenciales',${i},'usuario',this.value)"/>
+    <div class="pass-wrap"><input id="fc_${i}" type="password" placeholder="Contraseña" value="${escA(cr.contrasena)}" oninput="updateForm('credenciales',${i},'contrasena',this.value)"/>
+      <button class="pass-eye" type="button" onclick="toggleFormPass('fc_${i}')">👁</button></div>
+    <button class="btn-icon" style="color:var(--red)" onclick="removeFromArray('credenciales',${i})">✕</button>
+  </div>`).join("");
+
+  const docRows=(c.documentos||[]).map((d,i)=>`<div class="row" style="align-items:flex-start">
+    <div style="flex:2;min-width:130px"><div class="lbl">Documento</div><input value="${escH(d.nombre)}" oninput="updateForm('documentos',${i},'nombre',this.value)" placeholder="Nombre"/></div>
+    <div style="flex:1;min-width:90px"><div class="lbl">Estado</div><select onchange="updateForm('documentos',${i},'estado',this.value)">${DOC_EST.map(s=>`<option value="${s}" ${d.estado===s?"selected":""}>${s}</option>`).join("")}</select></div>
+    <div style="flex:1;min-width:110px"><div class="lbl">Vencimiento</div><input type="date" value="${d.vencimiento||""}" oninput="updateForm('documentos',${i},'vencimiento',this.value)"/></div>
+    <div style="flex:1;min-width:80px"><div class="lbl">Número</div><input value="${escH(d.numero||"")}" oninput="updateForm('documentos',${i},'numero',this.value)" placeholder="Opcional"/></div>
+    <button class="btn-icon" style="color:var(--red);align-self:center" onclick="removeFromArray('documentos',${i})">✕</button>
+  </div>`).join("");
+
+  const obligRows=(c.obligaciones||[]).map((o,i)=>`<div class="row" style="flex-wrap:wrap">
+    <div style="flex:2;min-width:150px"><div class="lbl">Tipo</div><select onchange="updateForm('obligaciones',${i},'tipo',this.value)"><option value="">Selecciona…</option>${OBLIG_LIST.map(t=>`<option value="${t}" ${o.tipo===t?"selected":""}>${t}</option>`).join("")}</select></div>
+    <div style="flex:1;min-width:100px"><div class="lbl">Período</div><select onchange="updateForm('obligaciones',${i},'periodo',this.value)"><option value="">—</option>${PERIODOS.map(p=>`<option value="${p}" ${o.periodo===p?"selected":""}>${p}</option>`).join("")}</select></div>
+    <div style="flex:1;min-width:110px"><div class="lbl">Fecha límite</div><input type="date" value="${o.fecha||""}" oninput="updateForm('obligaciones',${i},'fecha',this.value)"/></div>
+    <div style="flex:1;min-width:90px"><div class="lbl">Estado</div><select onchange="updateForm('obligaciones',${i},'estado',this.value)">${OBLIG_EST.map(s=>`<option value="${s}" ${o.estado===s?"selected":""}>${s}</option>`).join("")}</select></div>
+    <button class="btn-icon" style="color:var(--red);align-self:center" onclick="removeFromArray('obligaciones',${i})">✕</button>
+  </div>`).join("");
+
+  const recRows=(c.recordatorios||[]).map((r,i)=>`<div class="row" style="flex-wrap:wrap">
+    <input style="flex:3;min-width:150px" placeholder="Recordatorio" value="${escH(r.texto)}" oninput="updateForm('recordatorios',${i},'texto',this.value)"/>
+    <div style="flex:1;min-width:110px"><div class="lbl">Fecha</div><input type="date" value="${r.fecha||""}" oninput="updateForm('recordatorios',${i},'fecha',this.value)"/></div>
+    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+      <input type="checkbox" id="rec_${i}" ${r.mensual?"checked":""} onchange="updateForm('recordatorios',${i},'mensual',this.checked)" style="width:auto"/>
+      <label for="rec_${i}" style="font-size:12px;color:var(--purple-dark);white-space:nowrap">🔁 Mensual</label></div>
+    <button class="btn-icon" style="color:var(--red)" onclick="removeFromArray('recordatorios',${i})">✕</button>
+  </div>`).join("");
+
+  return`<h2>${esEditar?"Editar cliente":"Nuevo cliente"}</h2>
+    <div class="grid2" style="margin-bottom:16px">
+      <div><div class="lbl">Tipo</div><select onchange="updateFormField('tipo',this.value);render()">
+        <option value="natural" ${c.tipo==="natural"?"selected":""}>Persona Natural</option>
+        <option value="empresa" ${c.tipo==="empresa"?"selected":""}>Empresa</option></select></div>
+      <div><div class="lbl">Estado</div><select onchange="updateFormField('estado',this.value)">
+        <option value="activo" ${c.estado==="activo"?"selected":""}>Activo</option>
+        <option value="inactivo" ${c.estado==="inactivo"?"selected":""}>Inactivo</option>
+        <option value="pendiente" ${c.estado==="pendiente"?"selected":""}>Pendiente</option></select></div>
+      <div><div class="lbl">${c.tipo==="natural"?"Nombre completo":"Razón social"}</div><input value="${escH(c.nombre)}" oninput="updateFormField('nombre',this.value)"/></div>
+      <div><div class="lbl">${c.tipo==="natural"?"Cédula":"NIT"}</div><input value="${escH(c.nitCedula)}" oninput="updateFormField('nitCedula',this.value)"/></div>
+      <div><div class="lbl">Teléfono</div><input value="${escH(c.contacto)}" oninput="updateFormField('contacto',this.value)"/></div>
+      <div><div class="lbl">Correo</div><input value="${escH(c.email)}" oninput="updateFormField('email',this.value)"/></div>
+      <div><div class="lbl">Categoría</div><select onchange="updateFormField('categoria',this.value)">
+        <option value="">Sin categoría</option>${CATEGORIAS.map(cat=>`<option value="${cat}" ${c.categoria===cat?"selected":""}>${cat}</option>`).join("")}</select></div>
+      <div style="grid-column:1/-1"><div class="lbl">Dirección</div><input value="${escH(c.direccion)}" oninput="updateFormField('direccion',this.value)"/></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="section-title">🔑 Credenciales</div>
+        <button class="btn" style="font-size:12px;padding:3px 10px" onclick="addToArray('credenciales',{plataforma:'',usuario:'',contrasena:''})">+ Agregar</button></div>
+      ${credRows}</div>
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="section-title">📁 Documentos legales</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn" style="font-size:12px;padding:3px 10px" onclick="agregarDocsPred()">📋 Predefinidos</button>
+          <button class="btn" style="font-size:12px;padding:3px 10px" onclick="addToArray('documentos',{nombre:'',estado:'pendiente',vencimiento:'',numero:''})">+ Nuevo</button></div></div>
+      ${docRows||'<div style="font-size:12px;color:var(--text3);padding:6px 0">Usa "Predefinidos" para agregar los más comunes.</div>'}</div>
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="section-title">📋 Obligaciones fiscales</div>
+        <button class="btn" style="font-size:12px;padding:3px 10px" onclick="addToArray('obligaciones',{tipo:'',periodo:'',fecha:'',estado:'pendiente'})">+ Agregar</button></div>
+      ${obligRows}</div>
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="section-title">🔔 Recordatorios</div>
+        <button class="btn" style="font-size:12px;padding:3px 10px" onclick="addToArray('recordatorios',{texto:'',fecha:'',mensual:false})">+ Agregar</button></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Activa 🔁 para que se repita cada mes.</div>
+      ${recRows}</div>
+    <div style="margin-bottom:20px"><div class="lbl">📝 Notas</div>
+      <textarea oninput="updateFormField('notas',this.value)">${escH(c.notas)}</textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="${esEditar?"setState({vista:'detalle'})":"setState({vista:'lista'})"}">Cancelar</button>
+      <button class="btn btn-green" onclick="guardarCliente()">Guardar cliente</button></div>`;
+}
+
+// ── ACCIONES GLOBALES ────────────────────────────────────────────
+window.setState=setState;
+window.goNuevo=()=>{initForm({tipo:"natural",nombre:"",nitCedula:"",contacto:"",email:"",direccion:"",estado:"activo",categoria:"",credenciales:[],documentos:[],obligaciones:[],notas:"",recordatorios:[],honorarios:[],historial:[],archivos:[]});setState({vista:"nuevo"});};
+window.goEditar=()=>{initForm(S.seleccionado);setState({vista:"editar"});};
+window.verDetalle=(id)=>{
+  const c=S.clientes.find(x=>x._id===id);if(!c)return;
+  const h=hoy();let changed=false;
+  (c.recordatorios||[]).forEach(r=>{if(r.mensual&&r.fecha&&r.fecha<h){const d=new Date(r.fecha);d.setMonth(d.getMonth()+1);r.fecha=d.toISOString().slice(0,10);changed=true;}});
+  if(changed)updateDoc(doc(db,"clientes",id),{recordatorios:c.recordatorios});
+  setState({seleccionado:c,vista:"detalle"});
+};
+window.confirmarEliminar=(id)=>{if(!confirm("¿Eliminar este cliente?"))return;deleteCliente(id);};
+window.guardarCliente=async()=>{if(!formData.nombre.trim()){alert("El nombre es obligatorio.");return;}await saveCliente(formData);};
+window.updateFormField=(k,v)=>{formData[k]=v;};
+window.updateForm=(arr,i,k,v)=>{formData[arr][i][k]=v;};
+window.addToArray=(arr,obj)=>{formData[arr].push(obj);render();};
+window.removeFromArray=(arr,i)=>{formData[arr].splice(i,1);render();};
+window.agregarDocsPred=()=>{
+  const ex=(formData.documentos||[]).map(d=>d.nombre);
+  const nuevos=DOCS_PRED.filter(n=>!ex.includes(n)).map(n=>({nombre:n,estado:"pendiente",vencimiento:"",numero:""}));
+  if(!nuevos.length){alert("Ya tienes todos los predefinidos.");return;}
+  formData.documentos=[...(formData.documentos||[]),...nuevos];render();
+};
+window.togglePass=(i,pass)=>{const el=document.getElementById("pass_"+i);if(!el)return;if(el.dataset.shown==="1"){el.textContent="••••••••";el.style.letterSpacing="2px";el.dataset.shown="0";}else{el.textContent=pass;el.style.letterSpacing="0";el.dataset.shown="1";}};
+window.toggleFormPass=(id)=>{const inp=document.getElementById(id);if(inp)inp.type=inp.type==="password"?"text":"password";};
+</script>
+</body>
+</html>
